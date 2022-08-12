@@ -1,7 +1,5 @@
 <?php
 
-include './vendor/autoload.php';
+include './bootstrap/init.php';
 
-use App\Core\Request;
-
-new Request();
+print_r($_ENV);
