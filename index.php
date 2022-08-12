@@ -1,3 +1,7 @@
 <?php
 
-echo 'asd';
+include './vendor/autoload.php';
+
+use App\Core\Request;
+
+new Request();
