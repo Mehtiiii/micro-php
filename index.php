@@ -1,8 +1,10 @@
 <?php
 
+use App\Core\Routing\Router;
+
 include './bootstrap/init.php';
 
-use App\Core\StupidRouter;
+// var_dump(App\Core\Routing\Route::routes());
 
-$router = new StupidRouter();
+$router = new Router();
 $router->run();
