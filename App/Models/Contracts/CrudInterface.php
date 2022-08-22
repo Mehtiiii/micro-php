@@ -1,0 +1,19 @@
+<?php
+
+namespace App\Models\Contracts;
+
+interface CrudInterface
+{
+    # Create
+    public function insert(array $data) : int;
+
+    # Read
+    public function find(int $id) : object|null;
+    public function get(array $columns,array $where) : array;
+
+    # Update
+    public function update(array $data, array $where) : int;
+
+    # Delete
+    public function delete(array $where) : int;
+}

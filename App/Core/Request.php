@@ -6,6 +6,7 @@ class Request
 {
     private $method;
     private $params;
+    private $route_params = [];
     private $agent;
     private $ip;
     private $uri;
@@ -30,6 +31,16 @@ class Request
     //     return $this->params[$property] ?? null;
     // }
 
+    public function add_route_params($key, $value)
+    {
+        $this->route_params[$key] = $value;
+    }
+
+    public function get_route_param($key)
+    {
+        return $this->route_params[$key];
+    }
+
     public function input($key)
     {
         return $this->params[$key] ?? null;
@@ -42,7 +53,7 @@ class Request
 
     public function redirect($route)
     {
-        header('Location: ' . realpath($_ENV['HOST']) . "Views/Colors/$route");
+        header('Location: ' . realpath($_ENV['HOST']) . "views/Colors/$route");
         die();
     }
 }

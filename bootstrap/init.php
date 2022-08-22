@@ -11,3 +11,6 @@ $request = new App\Core\Request();
 
 include BASEPATH . 'helpers/helpers.php';
 include BASEPATH . 'routes/web.php';
+
+$router = new App\Core\Routing\Router();
+$router->run();

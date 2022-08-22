@@ -22,11 +22,28 @@ class Router
     private function findRoute(Request $request)
     {
         foreach ($this->routes as $route) {
-            if (in_array($request->method(), $route['methods']) && $request->uri() == $route['uri']) {
-                return $route;
+            if ($request->uri() == $route['uri'] && !in_array($request->method(), $route['methods'])  ) {
+                return false;
             }
+            if ($this->regex_matched($route))
+                return $route;
         }
         return null;
+    }
+
+    public function regex_matched($route)
+    {
+        global $request;
+        $pattern = '/^' . str_replace(['/', '{', '}'], ['\/', '(?<', '>[-%\w]+)'], $route['uri']) . '$/';
+        $result = preg_match($pattern, $this->request->uri(), $matches);
+        if (!$result) {
+            return false;
+        }
+        foreach ($matches as $key => $value) {
+            if (!is_int($key))
+                $request->add_route_params($key, $value);
+        }
+        return true;
     }
 
     public function run()
@@ -34,16 +51,20 @@ class Router
         # 405 : Invalid request method
         if ($this->invalidRequest($this->request))
             $this->dispatch405();
-    
+
         # 404 : Uri not exist
         if (is_null($this->current_route))
             $this->dispatch404();
+
+        # Run middlewares :
+        $this->run_global_middlewares(\App\Middleware\Global\globalMiddlewares::$middlewares);
+        $this->run_route_middlewares($this->current_route);
 
         # action :
         $this->dispatch($this->current_route);
     }
 
-    private function invalidRequest(Request $request) : bool
+    private function invalidRequest(Request $request): bool
     {
         foreach ($this->routes as $route) {
             if ($request->uri() == $route['uri'] && !in_array($request->method(), $route['methods'])) {
@@ -53,17 +74,34 @@ class Router
         return false;
     }
 
-    private function dispatch405() : void
+    private function run_global_middlewares($middlewares)
     {
-        header($_SERVER["SERVER_PROTOCOL"]." 405 Method Not Allowed");
-        view('errors.405');
+        foreach ($middlewares as $middleware) {
+            $middleware_obj = new $middleware();
+            $middleware_obj->handle();
+        }
+    }
+
+    private function run_route_middlewares($current_route)
+    {
+        $middlewares = $this->current_route['middlewares'];
+        foreach ($middlewares as $middleware) {
+            $middleware_obj = new $middleware;
+            $middleware_obj->handle();
+        }
+    }
+
+    private function dispatch405(): void
+    {
+        header($_SERVER["SERVER_PROTOCOL"] . " 405 Method Not Allowed");
+        view('errors.http.405');
         die();
     }
 
-    private function dispatch404() : void
+    private function dispatch404(): void
     {
-        header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
-        view('errors.404');
+        header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found");
+        view('errors.http.404');
         die();
     }
 
@@ -73,13 +111,14 @@ class Router
 
         # action : null
         if (is_null($action) || empty($action))
-            return ;
-        
+            return;
+
         # action : closure
-        if (is_callable($action))
+        if (is_callable($action)) {
             $action();
             # or :
             // call_user_func($action);
+        }
 
         # action : Controller@method
         if (is_string($action))
