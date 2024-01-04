@@ -29,7 +29,7 @@ class JsonBaseModel extends BaseModel
         return $data[$this->primary_key];
     }
 
-    public function find(int $id): object|null
+    public function find(int $id): object
     {
         $data = $this->read_table();
         foreach ($data as $row) {

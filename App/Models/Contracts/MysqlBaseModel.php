@@ -3,17 +3,22 @@
 namespace App\Models\Contracts;
 
 use PDOException;
+use Medoo\Medoo;
 
 class MysqlBaseModel extends BaseModel
 {
-    public function construct()
+    public function __construct($id)
     {
         try {
-            $this->connection = new \PDO("mysql:host={$_ENV['DB_HOST']};dbname={$_ENV['DB_NAME']}", $_ENV['DB_USER'], $_ENV['DB_PASS']);
-            $this->connection->exec('set names utf8;');
+            $pdo = new \PDO('mysql:dbname=micro;host=127.0.0.1', 'root', '');
+            $this->connection = new Medoo([
+                'pdo' => $pdo,
+                'type' => 'mysql'
+            ]);
         } catch (PDOException $e) {
             die('Connection failed to database: ' . $e->getMessage());
         }
+        $this->find($id);
     }
 
     #------------------------------------------------------------
@@ -26,33 +31,53 @@ class MysqlBaseModel extends BaseModel
     #------------------------------------------------------------
     public function insert(array $data): int
     {
-        return 1;
+        $this->connection->insert($this->table, $data);
+        return $this->connection->id();
     }
 
-    public function find(int $id): object|null
+    public function find(int $id): object
     {
-        return (object) [];
+        $record = $this->connection->get($this->table, '*', [$this->primary_key => $id]);
+        if (!is_null($record)) {
+            foreach ($record as $col => $val)
+                $this->attributes[$col] = $val;
+        }
+        return $this;
     }
-    public function get(array $columns, array $where): array|null
+    public function get(array $columns, array $where): array
     {
-        return [];
+        $result = $this->connection->get($this->table, $columns, $where);
+        return $result;
     }
 
     public function getAll(): array
     {
-        return [];
+        $result = $this->connection->select($this->table, '*');
+        return $result;
     }
 
     public function update(array $data, array $where): int
     {
-        return 1;
+        $result = $this->connection->update($this->table, $data, $where);
+        return $result->rowCount();
     }
 
     public function delete(array $where): int
     {
-        return 1;
+        $result = $this->connection->delete($this->table, $where);
+        return $result->rowCount();
     }
     #------------------------------------------------------------
     #------------------------------------------------------------
     #------------------------------------------------------------
+    public function remove(): int
+    {
+        $primary_key = $this->getAttribute($this->primary_key);
+        return $this->delete([$this->primary_key => $primary_key]);
+    }
+
+    public function save(): int
+    {
+        return $this->update($this->attributes, [$this->primary_key => $this->attributes[$this->primary_key]]);
+    }
 }

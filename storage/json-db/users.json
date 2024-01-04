@@ -1,1 +1,22 @@
-[{"id":1,"name":"mehdi","age":22},{"id":2,"name":"zahra","age":27},{"id":3,"name":"ali","age":19},{"id":4,"name":"reza","age":20}]
+[
+    {
+        "id": 1,
+        "name": "mehdi",
+        "age": 22
+    },
+    {
+        "id": 2,
+        "name": "zahra",
+        "age": 27
+    },
+    {
+        "id": 3,
+        "name": "ali",
+        "age": 19
+    },
+    {
+        "id": 4,
+        "name": "reza",
+        "age": 20
+    }
+]

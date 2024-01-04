@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use App\Models\Contracts\JsonBaseModel;
+use App\Models\Contracts\MysqlBaseModel;
 
-class product extends JsonBaseModel
+class product extends MysqlBaseModel
 {
     protected $table = 'products';
 }

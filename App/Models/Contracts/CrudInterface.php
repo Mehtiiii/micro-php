@@ -8,7 +8,7 @@ interface CrudInterface
     public function insert(array $data) : int;
 
     # Read
-    public function find(int $id) : object|null;
+    public function find(int $id) : object;
     public function get(array $columns,array $where) : array;
 
     # Update
